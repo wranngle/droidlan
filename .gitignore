@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Editor / OS
+.DS_Store
+*.swp
+*.tmp
+*.log
+.idea/
+.vscode/
+
+# Environment
+.env
+.env.*
+
+# Project-local
+incoming/
+ftp.apk
+nul
