@@ -12,6 +12,7 @@ import sys
 import time
 from pathlib import Path
 
+from log import log_event
 from mdns import register as mdns_register
 from qr import print_qr
 
@@ -170,22 +171,29 @@ class UploadHandler(http.server.BaseHTTPRequestHandler):
             content_length = int(self.headers.get("Content-Length") or 0)
         except ValueError:
             self.send_error(400, "Invalid Content-Length")
+            log_event("upload_server", "error", error={"message": "invalid content-length"})
             return
 
         if "multipart/form-data" not in content_type:
             self.send_error(400, "Expected multipart/form-data")
+            log_event("upload_server", "error", error={"message": "non-multipart upload"})
             return
         if content_length <= 0:
             self.send_error(400, "Empty upload")
+            log_event("upload_server", "error", error={"message": "empty upload"})
             return
         if content_length > MAX_BYTES:
             self.send_error(413, f"Upload exceeds {MAX_BYTES}-byte limit")
+            log_event("upload_server", "error", error={"message": "upload too large", "bytes": content_length})
             return
 
         boundary_match = re.search(r"boundary=([^;]+)", content_type)
         if not boundary_match:
             self.send_error(400, "Missing multipart boundary")
+            log_event("upload_server", "error", error={"message": "missing multipart boundary"})
             return
+
+        log_event("upload_server", "start", http={"content_length": content_length})
 
         boundary = boundary_match.group(1).strip().strip('"').encode()
         body = self._read_with_progress(content_length)
@@ -207,6 +215,7 @@ class UploadHandler(http.server.BaseHTTPRequestHandler):
             (UPLOAD_DIR / filename).write_bytes(content)
             saved.append(filename)
             print(f"Received: {filename} ({len(content)} bytes)")
+            log_event("upload_server", "complete", file={"path": str(UPLOAD_DIR / filename), "size": len(content)})
 
         self.send_response(200)
         self.send_header("Content-type", "text/html; charset=utf-8")
@@ -252,10 +261,13 @@ def main() -> None:
     print()
     print("Press Ctrl+C to stop.")
 
+    log_event("upload_server", "start", server={"host": ip, "port": args.port},
+              dir=str(UPLOAD_DIR))
     broadcast = None
     if args.mdns:
         broadcast = mdns_register(args.mdns, args.port, service="http", ip=ip)
         print(f"mDNS: broadcasting as {args.mdns} on {ip}:{args.port}")
+
 
     with socketserver.TCPServer(("", args.port), UploadHandler) as httpd:
         try:

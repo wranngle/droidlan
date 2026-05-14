@@ -16,6 +16,7 @@ from pathlib import Path
 
 import requests
 
+from log import log_event
 from mdns import register as mdns_register
 from qr import print_qr
 
@@ -68,6 +69,21 @@ def download_primitive_ftpd(target: Path) -> bool:
         return False
 
 
+class LoggingHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
+    def do_GET(self) -> None:
+        log_event("sideload_server", "start",
+                  http={"path": self.path, "client": self.client_address[0]})
+        try:
+            super().do_GET()
+        except Exception as exc:  # pragma: no cover - serve_forever swallows most
+            log_event("sideload_server", "error", http={"path": self.path},
+                      error={"message": str(exc)})
+            raise
+        else:
+            log_event("sideload_server", "complete",
+                      http={"path": self.path, "client": self.client_address[0]})
+
+
 def run_server(serve_dir: Path, apk_name: str, port: int, ip: str,
                mdns_hostname: str | None = None) -> None:
     os.chdir(serve_dir)
@@ -95,13 +111,15 @@ def run_server(serve_dir: Path, apk_name: str, port: int, ip: str,
     print("  Press Ctrl+C to stop the server")
     print()
 
+    log_event("sideload_server", "start", server={"host": ip, "port": port},
+              file={"path": str(serve_dir / apk_name), "size": apk_size_kb * 1024})
     broadcast = None
     if mdns_hostname:
         broadcast = mdns_register(mdns_hostname, port, service="http", ip=ip)
         print(f"  mDNS: broadcasting as {mdns_hostname} on {ip}:{port}")
         print()
 
-    with socketserver.TCPServer(("", port), http.server.SimpleHTTPRequestHandler) as httpd:
+    with socketserver.TCPServer(("", port), LoggingHTTPRequestHandler) as httpd:
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:
