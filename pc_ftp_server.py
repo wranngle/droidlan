@@ -14,6 +14,7 @@ from pyftpdlib.authorizers import DummyAuthorizer
 from pyftpdlib.handlers import FTPHandler
 from pyftpdlib.servers import FTPServer
 
+from mdns import register as mdns_register
 from qr import print_qr
 
 
@@ -38,6 +39,8 @@ def main() -> None:
                         help="FTP password (default: random 12-character token)")
     parser.add_argument("--passive-port-range", default="60000-60099",
                         help="Passive-mode port range (default: 60000-60099)")
+    parser.add_argument("--mdns", default=None,
+                        help="Broadcast over mDNS as the given hostname (e.g. droidlan-ftp.local)")
     args = parser.parse_args()
 
     args.dir.mkdir(parents=True, exist_ok=True)
@@ -74,7 +77,15 @@ def main() -> None:
     print("Press Ctrl+C to stop.")
     print()
 
-    FTPServer(("0.0.0.0", args.port), handler).serve_forever()
+    broadcast = None
+    if args.mdns:
+        broadcast = mdns_register(args.mdns, args.port, service="ftp", ip=ip)
+        print(f"mDNS: broadcasting as {args.mdns} on {ip}:{args.port}")
+    try:
+        FTPServer(("0.0.0.0", args.port), handler).serve_forever()
+    finally:
+        if broadcast is not None:
+            broadcast.unregister()
 
 
 if __name__ == "__main__":
