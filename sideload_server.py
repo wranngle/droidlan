@@ -16,6 +16,8 @@ from pathlib import Path
 
 import requests
 
+from qr import print_qr
+
 DEFAULT_APK_NAME = "ftp.apk"
 PRIMITIVE_FTPD_RELEASES_API = "https://api.github.com/repos/wolpi/prim-ftpd/releases/latest"
 
@@ -78,6 +80,10 @@ def run_server(serve_dir: Path, apk_name: str, port: int, ip: str) -> None:
     print("  Type this URL on your Android device:")
     print()
     print(f"  >>>  {url}  <<<")
+    print()
+    print("  Or scan this QR code with your phone's camera:")
+    print()
+    print_qr(url)
     print()
     print("=" * 60)
     print()
