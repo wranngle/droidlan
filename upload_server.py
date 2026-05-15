@@ -10,6 +10,8 @@ import socket
 import socketserver
 from pathlib import Path
 
+from qr import print_qr
+
 HTML_FORM = """<!DOCTYPE html>
 <html>
 <head>
@@ -136,7 +138,12 @@ def main() -> None:
     print("HTTP UPLOAD SERVER")
     print("=" * 50)
     print()
-    print(f"On your phone, open: http://{ip}:{args.port}")
+    upload_url = f"http://{ip}:{args.port}"
+    print(f"On your phone, open: {upload_url}")
+    print()
+    print("Or scan this QR code with your phone's camera:")
+    print()
+    print_qr(upload_url)
     print()
     print(f"Uploads land in: {UPLOAD_DIR}")
     print()

@@ -14,6 +14,8 @@ from pyftpdlib.authorizers import DummyAuthorizer
 from pyftpdlib.handlers import FTPHandler
 from pyftpdlib.servers import FTPServer
 
+from qr import print_qr
+
 
 def get_local_ip() -> str:
     try:
@@ -62,6 +64,10 @@ def main() -> None:
     print(f"  Port: {args.port}")
     print(f"  User: {args.user}")
     print(f"  Pass: {password}")
+    print()
+    print("Or scan this QR code with your phone's FTP client:")
+    print()
+    print_qr(f"ftp://{args.user}:{password}@{ip}:{args.port}/")
     print()
     print(f"Uploads land in: {upload_dir}")
     print()
