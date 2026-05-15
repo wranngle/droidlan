@@ -1,4 +1,4 @@
-"""Chunked file transfer with checkpoint-based resume."""
+"""Transfer wire-format helpers: chunked checkpoint-resume + crypto framing."""
 
 from .chunked import (
     Checkpoint,
