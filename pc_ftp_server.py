@@ -14,6 +14,7 @@ from pyftpdlib.authorizers import DummyAuthorizer
 from pyftpdlib.handlers import FTPHandler
 from pyftpdlib.servers import FTPServer
 
+from log import log_event
 from mdns import register as mdns_register
 from qr import print_qr
 from upload_server import ProgressTracker, render_progress
@@ -78,7 +79,17 @@ class ProgressFTPHandler(FTPHandler):
 
     def on_file_received(self, file: str) -> None:
         print()
+        try:
+            size = Path(file).stat().st_size
+        except OSError:
+            size = None
+        log_event("pc_ftp_server", "complete", file={"path": file, "size": size})
         super().on_file_received(file)
+
+    def on_incomplete_file_received(self, file: str) -> None:
+        log_event("pc_ftp_server", "error", file={"path": file},
+                  error={"message": "incomplete upload"})
+        super().on_incomplete_file_received(file)
 
 
 def main() -> None:
@@ -131,6 +142,8 @@ def main() -> None:
     print("Press Ctrl+C to stop.")
     print()
 
+    log_event("pc_ftp_server", "start", server={"host": ip, "port": args.port},
+              dir=str(upload_dir))
     broadcast = None
     if args.mdns:
         broadcast = mdns_register(args.mdns, args.port, service="ftp", ip=ip)
