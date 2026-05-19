@@ -16,6 +16,7 @@ from pathlib import Path
 
 import requests
 
+from mdns import register as mdns_register
 from qr import print_qr
 
 DEFAULT_APK_NAME = "ftp.apk"
@@ -67,7 +68,8 @@ def download_primitive_ftpd(target: Path) -> bool:
         return False
 
 
-def run_server(serve_dir: Path, apk_name: str, port: int, ip: str) -> None:
+def run_server(serve_dir: Path, apk_name: str, port: int, ip: str,
+               mdns_hostname: str | None = None) -> None:
     os.chdir(serve_dir)
     url = f"http://{ip}:{port}/{apk_name}"
     apk_size_kb = (serve_dir / apk_name).stat().st_size // 1024
@@ -93,11 +95,20 @@ def run_server(serve_dir: Path, apk_name: str, port: int, ip: str) -> None:
     print("  Press Ctrl+C to stop the server")
     print()
 
+    broadcast = None
+    if mdns_hostname:
+        broadcast = mdns_register(mdns_hostname, port, service="http", ip=ip)
+        print(f"  mDNS: broadcasting as {mdns_hostname} on {ip}:{port}")
+        print()
+
     with socketserver.TCPServer(("", port), http.server.SimpleHTTPRequestHandler) as httpd:
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:
             print("\nServer stopped.")
+        finally:
+            if broadcast is not None:
+                broadcast.unregister()
 
 
 def main() -> None:
@@ -107,6 +118,8 @@ def main() -> None:
                         help="HTTP port (default: 8080)")
     parser.add_argument("--apk", type=Path, default=script_dir / DEFAULT_APK_NAME,
                         help=f"APK file to serve (default: ./{DEFAULT_APK_NAME})")
+    parser.add_argument("--mdns", default=None,
+                        help="Broadcast over mDNS as the given hostname (e.g. droidlan-sideload.local)")
     args = parser.parse_args()
 
     apk_path: Path = args.apk.resolve()
@@ -133,7 +146,7 @@ def main() -> None:
         print(f"APK already present: {apk_path}")
 
     print()
-    run_server(apk_path.parent, apk_path.name, args.port, ip)
+    run_server(apk_path.parent, apk_path.name, args.port, ip, mdns_hostname=args.mdns)
 
 
 if __name__ == "__main__":

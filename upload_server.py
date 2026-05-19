@@ -10,6 +10,7 @@ import socket
 import socketserver
 from pathlib import Path
 
+from mdns import register as mdns_register
 from qr import print_qr
 
 HTML_FORM = """<!DOCTYPE html>
@@ -127,6 +128,8 @@ def main() -> None:
                         help="Directory where uploads land (default: ./incoming)")
     parser.add_argument("--max-bytes", type=int, default=512 * 1024 * 1024,
                         help="Reject uploads larger than this (default: 512 MiB)")
+    parser.add_argument("--mdns", default=None,
+                        help="Broadcast over mDNS as the given hostname (e.g. droidlan-upload.local)")
     args = parser.parse_args()
 
     args.dir.mkdir(parents=True, exist_ok=True)
@@ -149,8 +152,17 @@ def main() -> None:
     print()
     print("Press Ctrl+C to stop.")
 
+    broadcast = None
+    if args.mdns:
+        broadcast = mdns_register(args.mdns, args.port, service="http", ip=ip)
+        print(f"mDNS: broadcasting as {args.mdns} on {ip}:{args.port}")
+
     with socketserver.TCPServer(("", args.port), UploadHandler) as httpd:
-        httpd.serve_forever()
+        try:
+            httpd.serve_forever()
+        finally:
+            if broadcast is not None:
+                broadcast.unregister()
 
 
 if __name__ == "__main__":
