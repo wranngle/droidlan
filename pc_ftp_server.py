@@ -16,6 +16,7 @@ from pyftpdlib.servers import FTPServer
 
 from mdns import register as mdns_register
 from qr import print_qr
+from upload_server import ProgressTracker, render_progress
 
 
 def get_local_ip() -> str:
@@ -25,6 +26,59 @@ def get_local_ip() -> str:
             return s.getsockname()[0]
     except OSError:
         return "127.0.0.1"
+
+
+class _ProgressWriter:
+    """File-like wrapper that ticks a ProgressTracker on every write().
+
+    pyftpdlib opens the destination file via `self.fs.open()` then hands the
+    file object to its data channel, which calls `.write(bytes)` per inbound
+    chunk. Wrapping that file object lets us tap the byte stream without
+    forking pyftpdlib's STOR implementation.
+    """
+
+    def __init__(self, fd, tracker: ProgressTracker):
+        self._fd = fd
+        self._tracker = tracker
+
+    def write(self, data: bytes) -> int:
+        n = self._fd.write(data)
+        # Some file objects return None from write(); treat that as len(data).
+        bytes_written = n if isinstance(n, int) else len(data)
+        self._tracker.update(bytes_written)
+        return bytes_written
+
+    def __getattr__(self, name):
+        return getattr(self._fd, name)
+
+
+class ProgressFTPHandler(FTPHandler):
+    """FTPHandler that prints a per-file progress bar during STOR uploads.
+
+    After the standard `ftp_STOR` opens the destination file and hands it to
+    the data channel, we splice in a `_ProgressWriter` wrapper so each
+    inbound chunk ticks the ProgressTracker. The client-advertised size
+    arrives via the optional ALLO command; when absent, ProgressTracker
+    still prints byte counts but the bar stays parked at 0% until close.
+    """
+
+    def ftp_STOR(self, file, mode="w"):  # noqa: D401 - matches superclass
+        result = super().ftp_STOR(file, mode)
+        total = int(getattr(self, "_pending_allo_size", 0) or 0)
+        tracker = ProgressTracker(
+            total=total,
+            on_update=lambda done, t, pct: render_progress(
+                Path(file).name, done, t, pct),
+            label=Path(file).name,
+        )
+        if self.data_channel is not None and self.data_channel.file_obj is not None:
+            self.data_channel.file_obj = _ProgressWriter(
+                self.data_channel.file_obj, tracker)
+        return result
+
+    def on_file_received(self, file: str) -> None:
+        print()
+        super().on_file_received(file)
 
 
 def main() -> None:
@@ -52,7 +106,7 @@ def main() -> None:
     authorizer = DummyAuthorizer()
     authorizer.add_user(args.user, password, str(upload_dir), perm="elradfmw")
 
-    handler = FTPHandler
+    handler = ProgressFTPHandler
     handler.authorizer = authorizer
     handler.passive_ports = range(passive_lo, passive_hi + 1)
 

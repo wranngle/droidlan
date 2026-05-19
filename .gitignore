@@ -21,3 +21,4 @@ venv/
 incoming/
 ftp.apk
 nul
+logs/
