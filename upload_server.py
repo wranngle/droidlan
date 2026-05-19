@@ -12,9 +12,11 @@ import sys
 import time
 from pathlib import Path
 
-from log import log_event
-from mdns import register as mdns_register
-from qr import print_qr
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from droidlan import pwa  # noqa: E402  — local package, sibling to this script
+from log import log_event  # noqa: E402
+from mdns import register as mdns_register  # noqa: E402
+from qr import print_qr  # noqa: E402
 
 HTML_FORM = """<!DOCTYPE html>
 <html>
@@ -141,6 +143,8 @@ def safe_filename(raw: str) -> str:
 
 class UploadHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self) -> None:
+        if pwa.serve(self):
+            return
         self.send_response(200)
         self.send_header("Content-type", "text/html; charset=utf-8")
         self.end_headers()
