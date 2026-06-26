@@ -2,7 +2,7 @@
 
 **Point your phone's camera at a QR code. That's the whole setup.**
 
-Move files between a PC and an Android phone over LAN — zero-config, no cloud,
+Move files between a PC and an Android phone over LAN: zero-config, no cloud,
 no cable. Run a script on the PC; it prints a scannable QR code that drops
 the phone straight into the right URL. Designed for the case where the
 phone's USB port is broken and every other path (Play Store sign-in, ADB,
@@ -34,11 +34,11 @@ Python 3.9 or newer.
 pip install pyftpdlib requests qrcode
 ```
 
-Then either clone the repo or just download the three `.py` files — they're independent.
+Then either clone the repo or just download the three `.py` files. They're independent.
 
 ## Three scripts, one flow
 
-### 1. `sideload_server.py` — get an FTP client onto the phone
+### 1. `sideload_server.py`: get an FTP client onto the phone
 
 Hosts an APK over plain HTTP so the phone can install it from its browser. On first run with no APK present, auto-downloads the latest [Primitive FTPd](https://github.com/wolpi/prim-ftpd) release (a free, open-source FTP client/server for Android).
 
@@ -47,14 +47,14 @@ python sideload_server.py
 ```
 
 Prints a URL like `http://192.168.1.42:8080/ftp.apk`, plus a QR code that
-encodes the same URL — scan it with the phone camera instead of typing.
+encodes the same URL. Scan it with the phone camera instead of typing.
 Accept "install from unknown source," done.
 
 Skip this script if you already have an FTP client or any other way to upload from the phone.
 
 Flags: `--port`, `--apk /path/to/anything.apk` (use any APK, not just Primitive FTPd).
 
-### 2. `pc_ftp_server.py` — receive files from phone via FTP
+### 2. `pc_ftp_server.py`: receive files from phone via FTP
 
 Runs an FTP server on the PC that the phone uploads into. Random credentials are generated each run and printed at startup.
 
@@ -68,9 +68,9 @@ Files land in `./incoming/`.
 
 Flags: `--port` (default 2121), `--dir`, `--user`, `--password`, `--passive-port-range`.
 
-### 3. `upload_server.py` — receive files from phone via browser
+### 3. `upload_server.py`: receive files from phone via browser
 
-Browser-form HTTP upload. Useful if you don't want to install an FTP client at all — just point the phone's camera at the QR code and submit.
+Browser-form HTTP upload. Useful if you don't want to install an FTP client at all. Just point the phone's camera at the QR code and submit.
 
 ```bash
 python upload_server.py
@@ -82,8 +82,8 @@ Flags: `--port` (default 8080), `--dir`, `--max-bytes` (default 512 MiB).
 
 ## Security profile
 
-These scripts assume a trusted LAN. Both `pc_ftp_server.py` and `upload_server.py` listen on `0.0.0.0`, so anyone on the same network who can reach your PC's IP can upload to the configured directory while the server is running. The FTP server uses random credentials by default, but FTP itself is plaintext — anyone sniffing the LAN sees the password and the file contents. Don't run any of this on public Wi-Fi.
+These scripts assume a trusted LAN. Both `pc_ftp_server.py` and `upload_server.py` listen on `0.0.0.0`, so anyone on the same network who can reach your PC's IP can upload to the configured directory while the server is running. The FTP server uses random credentials by default, but FTP itself is plaintext. Anyone sniffing the LAN sees the password and the file contents. Don't run any of this on public Wi-Fi.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE).
