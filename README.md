@@ -76,7 +76,7 @@ Browser-form HTTP upload. Useful if you don't want to install an FTP client at a
 python upload_server.py
 ```
 
-Phone scans the QR (or visits the printed URL), picks file(s), submits. Files land in `./incoming/`.
+Phone scans the QR (or visits the printed URL), picks file(s), submits. Files land in `./incoming/`. The root URL serves the installable PWA shell (drag-and-drop, offline shell, home-screen install); `/basic` keeps a no-JS fallback form for ancient browsers.
 
 Flags: `--port` (default 8080), `--dir`, `--max-bytes` (default 512 MiB).
 

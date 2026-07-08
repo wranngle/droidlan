@@ -19,9 +19,11 @@ from mdns import register as mdns_register  # noqa: E402
 from qr import print_qr  # noqa: E402
 
 HTML_FORM = """<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Send files from your phone to this PC over your own Wi-Fi. No cloud, no cable, no app.">
     <title>Upload to PC</title>
     <style>
         body {{ font-family: sans-serif; padding: 20px; font-size: 18px; }}
@@ -36,7 +38,7 @@ HTML_FORM = """<!DOCTYPE html>
 <body>
     <h1>Upload files to PC</h1>
     <form method="POST" enctype="multipart/form-data">
-        <input type="file" name="file" multiple><br><br>
+        <input type="file" name="file" multiple required><br><br>
         <input type="submit" value="UPLOAD">
     </form>
     {message}
@@ -145,6 +147,14 @@ class UploadHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         if pwa.serve(self):
             return
+        if self.path in ("/", "/index.html"):
+            # The QR encodes the root URL; the polished PWA shell is the
+            # first-run surface. It posts to "/" and keeps its assets under
+            # /pwa/, so serving it here is purely an alias.
+            self.path = "/pwa/index.html"
+            pwa.serve(self)
+            return
+        # /basic and anything else: the no-JS fallback form.
         self.send_response(200)
         self.send_header("Content-type", "text/html; charset=utf-8")
         self.end_headers()

@@ -120,8 +120,18 @@ def test_path_traversal_is_rejected(server):
     assert exc.value.code == 404
 
 
-def test_unrelated_paths_still_serve_upload_form(server):
+def test_root_serves_pwa_shell(server):
+    # The QR encodes the root URL: the first-run scan must land on the
+    # polished PWA shell, not the bare fallback form.
     resp = _get(server, "/")
     assert resp.status == 200
     body = resp.read().decode("utf-8")
-    assert "Upload files to PC" in body, "root must still serve the legacy form"
+    assert "Send files to PC" in body, "root must serve the PWA shell"
+    assert "/pwa/manifest.webmanifest" in body, "root shell must stay installable"
+
+
+def test_basic_path_serves_no_js_fallback_form(server):
+    resp = _get(server, "/basic")
+    assert resp.status == 200
+    body = resp.read().decode("utf-8")
+    assert "Upload files to PC" in body, "/basic must keep the no-JS fallback form"
