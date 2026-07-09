@@ -24,7 +24,7 @@ HTML_FORM = """<!DOCTYPE html>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Send files from your phone to this PC over your own Wi-Fi. No cloud, no cable, no app.">
-    <title>Upload to PC</title>
+    <title>Send files to this PC | droidlan</title>
     <style>
         body {{ font-family: sans-serif; padding: 20px; font-size: 18px; }}
         input[type=file] {{ font-size: 18px; margin: 20px 0; }}
@@ -36,10 +36,10 @@ HTML_FORM = """<!DOCTYPE html>
     </style>
 </head>
 <body>
-    <h1>Upload files to PC</h1>
+    <h1>Send files to this PC</h1>
     <form method="POST" enctype="multipart/form-data">
         <input type="file" name="file" multiple required><br><br>
-        <input type="submit" value="UPLOAD">
+        <input type="submit" value="Send files">
     </form>
     {message}
 </body>

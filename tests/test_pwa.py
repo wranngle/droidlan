@@ -122,16 +122,19 @@ def test_path_traversal_is_rejected(server):
 
 def test_root_serves_pwa_shell(server):
     # The QR encodes the root URL: the first-run scan must land on the
-    # polished PWA shell, not the bare fallback form.
+    # polished PWA shell (installable), not the bare fallback form.
     resp = _get(server, "/")
     assert resp.status == 200
     body = resp.read().decode("utf-8")
-    assert "Send files to PC" in body, "root must serve the PWA shell"
+    assert "Send files to this PC" in body, "root must serve the PWA shell"
     assert "/pwa/manifest.webmanifest" in body, "root shell must stay installable"
+    assert 'id="drop"' in body, "root shell must have the drag-and-drop zone"
 
 
 def test_basic_path_serves_no_js_fallback_form(server):
+    # /basic is the no-JS fallback: the plain multipart form, no PWA shell.
     resp = _get(server, "/basic")
     assert resp.status == 200
     body = resp.read().decode("utf-8")
-    assert "Upload files to PC" in body, "/basic must keep the no-JS fallback form"
+    assert 'value="Send files"' in body, "/basic must serve the plain submit form"
+    assert "/pwa/manifest.webmanifest" not in body, "/basic is not the installable shell"

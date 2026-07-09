@@ -1,7 +1,7 @@
 {
-  "name": "droidlan transfer",
-  "short_name": "droidlan",
-  "description": "Local phone-to-PC file transfer over your own Wi-Fi.",
+  "name": "Send files to this PC",
+  "short_name": "Send files",
+  "description": "Send files from your phone to this PC over local Wi-Fi. No account, cable, app install, cloud upload, or IP typing.",
   "start_url": "/pwa/",
   "scope": "/pwa/",
   "display": "standalone",
