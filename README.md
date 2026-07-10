@@ -44,17 +44,17 @@ Then either clone the repo or just download the three `.py` files. They're indep
 
 ## Three scripts, one flow
 
+Each script runs on its own. Pick the one that matches how you want files to move.
+
 ### 1. `sideload_server.py`: get an FTP client onto the phone
 
-Hosts an APK over plain HTTP so the phone can install it from its browser. On first run with no APK present, auto-downloads the latest [Primitive FTPd](https://github.com/wolpi/prim-ftpd) release (a free, open-source FTP client/server for Android).
+Pick this one when the phone has no FTP client yet and no working way to install one. It hosts an APK over plain HTTP so the phone installs it from its own browser. On first run with no APK present, it auto-downloads the latest [Primitive FTPd](https://github.com/wolpi/prim-ftpd) release (a free, open-source FTP client/server for Android).
 
 ```bash
 python sideload_server.py
 ```
 
-Prints a URL like `http://192.168.1.42:8080/ftp.apk`, plus a QR code that
-encodes the same URL. Scan it with the phone camera instead of typing.
-Accept "install from unknown source," done.
+Prints a URL like `http://192.168.1.42:8080/ftp.apk`, plus a QR code that encodes the same URL. Scan it with the phone camera instead of typing. Accept "install from unknown source," done.
 
 Skip this script if you already have an FTP client or any other way to upload from the phone.
 
@@ -62,21 +62,19 @@ Flags: `--port`, `--apk /path/to/anything.apk` (use any APK, not just Primitive 
 
 ### 2. `pc_ftp_server.py`: receive files from phone via FTP
 
-Runs an FTP server on the PC that the phone uploads into. Random credentials are generated each run and printed at startup.
+Pick this one for repeat transfers: once the phone has an FTP client, you connect a single time and keep moving files without re-scanning anything. It runs an FTP server on the PC that the phone uploads into. Random credentials are generated each run and printed at startup.
 
 ```bash
 python pc_ftp_server.py
 ```
 
-Connect from your phone's FTP client to the printed `Host:Port` with the printed `User:Pass`. A QR code encodes the full `ftp://user:pass@host:port/`
-URL so a client that supports `ftp://` deep links can open it directly.
-Files land in `./incoming/`.
+Connect from your phone's FTP client to the printed `Host:Port` with the printed `User:Pass`. A QR code encodes the full `ftp://user:pass@host:port/` URL, so a client that supports `ftp://` deep links can open it directly. Files land in `./incoming/`.
 
 Flags: `--port` (default 2121), `--dir`, `--user`, `--password`, `--passive-port-range`, `--mdns <hostname>`.
 
 ### 3. `upload_server.py`: receive files from phone via browser
 
-Browser-form HTTP upload. Useful if you don't want to install an FTP client at all. Just point the phone's camera at the QR code and submit.
+Pick this one when you want zero installs on the phone: the browser it already has is the whole client. The PC serves a browser upload form; the phone scans a QR code, picks files, and submits.
 
 ```bash
 python upload_server.py
