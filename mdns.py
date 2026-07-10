@@ -8,9 +8,10 @@ from __future__ import annotations
 
 import socket
 from dataclasses import dataclass
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
-from zeroconf import IPVersion, ServiceInfo, Zeroconf
+if TYPE_CHECKING:
+    from zeroconf import ServiceInfo, Zeroconf
 
 SERVICE_TYPES = {
     "http": "_http._tcp.local.",
@@ -62,6 +63,8 @@ def register(
     `hostname` may be supplied with or without a trailing `.local`.
     Returns an `MdnsBroadcast` handle; call `.unregister()` to clean up.
     """
+    from zeroconf import IPVersion, ServiceInfo, Zeroconf
+
     service_type = SERVICE_TYPES.get(service)
     if service_type is None:
         raise ValueError(f"unknown service kind {service!r}; expected one of {sorted(SERVICE_TYPES)}")
@@ -91,6 +94,8 @@ def resolve(hostname: str, service: str = "http", timeout_ms: int = 3000) -> Opt
 
     Returns the dotted-quad string or `None` if not found within `timeout_ms`.
     """
+    from zeroconf import IPVersion, Zeroconf
+
     service_type = SERVICE_TYPES.get(service)
     if service_type is None:
         raise ValueError(f"unknown service kind {service!r}; expected one of {sorted(SERVICE_TYPES)}")

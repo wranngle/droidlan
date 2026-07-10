@@ -1,6 +1,12 @@
 # droidlan
 
-**Point your phone's camera at a QR code. That's the whole setup.**
+> point your phone's camera at a QR code. That's the whole setup.
+
+![License](https://img.shields.io/github/license/wranngle/droidlan?color=A371F7)
+![Status](https://img.shields.io/badge/status-active-brightgreen)
+
+> [!NOTE]
+> Active personal project. Used in my own workflow. Issues triaged on a personal-time cadence.
 
 Move files between a PC and an Android phone over LAN: zero-config, no cloud,
 no cable. Run a script on the PC; it prints a scannable QR code that drops
@@ -10,7 +16,7 @@ cloud sync) is more friction than it's worth.
 
 ## First user moment
 
-1. `pip install pyftpdlib requests qrcode` (one time).
+1. `pip install -r requirements.txt` (one time).
 2. `python upload_server.py` on the PC.
 3. Open the phone camera, point it at the QR code in the terminal, tap the
    notification, pick files in the browser, hit submit.
@@ -31,7 +37,7 @@ Everything is LAN-only. The only outbound internet call is the optional first-ru
 Python 3.9 or newer.
 
 ```bash
-pip install pyftpdlib requests qrcode
+pip install -r requirements.txt
 ```
 
 Then either clone the repo or just download the three `.py` files. They're independent.
@@ -52,7 +58,7 @@ Accept "install from unknown source," done.
 
 Skip this script if you already have an FTP client or any other way to upload from the phone.
 
-Flags: `--port`, `--apk /path/to/anything.apk` (use any APK, not just Primitive FTPd).
+Flags: `--port`, `--apk /path/to/anything.apk` (use any APK, not just Primitive FTPd), `--mdns <hostname>` (broadcast the URL over mDNS so the phone can resolve `<hostname>.local` instead of typing an IP).
 
 ### 2. `pc_ftp_server.py`: receive files from phone via FTP
 
@@ -66,7 +72,7 @@ Connect from your phone's FTP client to the printed `Host:Port` with the printed
 URL so a client that supports `ftp://` deep links can open it directly.
 Files land in `./incoming/`.
 
-Flags: `--port` (default 2121), `--dir`, `--user`, `--password`, `--passive-port-range`.
+Flags: `--port` (default 2121), `--dir`, `--user`, `--password`, `--passive-port-range`, `--mdns <hostname>`.
 
 ### 3. `upload_server.py`: receive files from phone via browser
 
@@ -78,7 +84,7 @@ python upload_server.py
 
 Phone scans the QR (or visits the printed URL), picks file(s), submits. Files land in `./incoming/`. The root URL serves the installable PWA shell (drag-and-drop, offline shell, home-screen install); `/basic` keeps a no-JS fallback form for ancient browsers.
 
-Flags: `--port` (default 8080), `--dir`, `--max-bytes` (default 512 MiB).
+Flags: `--port` (default 8080), `--dir`, `--max-bytes` (default 512 MiB), `--mdns <hostname>`.
 
 ## Security profile
 
