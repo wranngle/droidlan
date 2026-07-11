@@ -16,9 +16,9 @@ All three scripts are launched directly with `python <script>.py` from any worki
 | `pc_ftp_server.py` | 2121 (passive 60000–60099) | FTP server on the **PC** that the phone uploads into. Random credentials generated and printed at startup. Anonymous access is off. | `pyftpdlib` |
 | `upload_server.py` | 8080 | Browser-form HTTP upload. Stdlib only. | none |
 
-Install third-party deps with `pip install pyftpdlib requests`. No `requirements.txt` / `pyproject.toml` is checked in by design — this is three independent scripts, not a package.
+Install third-party deps with `pip install -r requirements.txt` (pins `cryptography`, `pyftpdlib`, `qrcode`, `requests`, `zeroconf`).
 
-There is no test suite, build step, or linter configured.
+Run the test suite with `pytest tests/ -q`. No build step or linter is configured.
 
 ## Architecture: the bootstrap → transfer flow
 
