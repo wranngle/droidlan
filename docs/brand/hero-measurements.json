@@ -1,0 +1,46 @@
+{
+  "recorded_at": "2026-07-11",
+  "repo": "wranngle/droidlan",
+  "commit": "fd5e7c57dcca44e9f5af287e2a19e38faec6d998",
+  "provenance": {
+    "server": "upload_server.py run unmodified from ~/projects/droidlan (checkout identical to origin/main), default flags, port 8080",
+    "browser": "Playwright 1.60 driving Chromium 1228 headless against the real served pages at http://127.0.0.1:8080/",
+    "terminal_scenes": "verbatim captured process output (server stdout incl. its QR; ls -lh incoming/) rendered in a styled terminal frame; text content unaltered",
+    "drag_drop": "real DragEvent dragenter/drop dispatched to the live page with a DataTransfer carrying the real file bytes; the page's own handlers and a normal HTTP POST did the rest",
+    "phone_involved": false
+  },
+  "tests": {
+    "command": "pytest tests/ -q",
+    "result": "91 passed, 3 skipped in 12.05s",
+    "passed": 91,
+    "skipped": 3
+  },
+  "upload_verification": {
+    "files_uploaded": [
+      "fixtures/exif-samples/photo-2023-04.jpg",
+      "fixtures/exif-samples/photo-2024-11.jpg",
+      "fixtures/exif-samples/photo-2025-01.jpg"
+    ],
+    "landed_in": "/home/wranngle/projects/droidlan/incoming",
+    "sha256_match": "all 3 uploaded files byte-identical to sources (3 matching hash pairs)",
+    "page_status_text": "Sent 3 file(s)."
+  },
+  "qr_verification": {
+    "decoder": "OpenCV 5.0.0 QRCodeDetector (inverted + 1.5x vertical rescale preprocessing, standard for terminal half-block QRs)",
+    "decoded_from": ["media/qr-terminal.png", "hero.webp frame 13"],
+    "decoded_value": "http://172.31.245.151:8080",
+    "matches_served_url": true
+  },
+  "encode": {
+    "file": "hero.webp",
+    "fps": 12,
+    "width": 1100,
+    "height": 700,
+    "codec": "libwebp",
+    "quality": 58,
+    "frames": 173,
+    "duration_s": 14.4,
+    "bytes": 2442114,
+    "under_3_5MB": true
+  }
+}

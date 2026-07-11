@@ -1,20 +1,70 @@
-# droidlan
+<div align="center">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/brand/droidlan-wordmark-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/brand/droidlan-wordmark-light.png">
+  <img alt="droidlan" src="docs/brand/droidlan-wordmark-light.png" width="30%">
+</picture>
 
-> point your phone's camera at a QR code. That's the whole setup.
+#### QR launch · zero-config LAN transfer · FTP or browser upload · mDNS discovery · installable PWA
 
-![License](https://img.shields.io/github/license/wranngle/droidlan?color=A371F7)
-![Status](https://img.shields.io/badge/status-active-brightgreen)
+# Point your phone's camera at a QR code. That's the whole setup.
 
-> [!NOTE]
-> Active personal project. Used in my own workflow. Issues triaged on a personal-time cadence.
+**[Quick start](#-quick-start) | [Three scripts](#-three-scripts-one-flow) | [Security profile](#-security-profile) | [License](#license)**
+
+### 📲 **`python upload_server.py`** and scan the QR it prints
+
+No cloud, no cable, no account, no phone-side app. Everything stays on the LAN.
+
+**❤️ [Sponsor this project](https://github.com/sponsors/wranngle) ❤️**
+
+[![License](https://img.shields.io/github/license/wranngle/droidlan?color=A371F7)](LICENSE)
+[![Last commit](https://img.shields.io/github/last-commit/wranngle/droidlan)](https://github.com/wranngle/droidlan/commits/main)
+[![Contributors](https://img.shields.io/github/contributors/wranngle/droidlan)](https://github.com/wranngle/droidlan/graphs/contributors)
+
+[![GitHub stars](https://img.shields.io/github/stars/wranngle/droidlan?style=social)](https://github.com/wranngle/droidlan/stargazers)
+[![Follow on GitHub](https://img.shields.io/github/followers/wranngle?style=social)](https://github.com/wranngle)
+</div>
+
+---
+
+![Real droidlan session: upload_server.py prints a QR code in the terminal, the served page opens in a browser, files are dropped on the drop zone and land in incoming/ on the PC](docs/hero.webp)
+
+*Browser-side upload; the same QR drives it from a phone.*
 
 Move files between a PC and an Android phone over LAN: zero-config, no cloud,
 no cable. Run a script on the PC; it prints a scannable QR code that drops
 the phone straight into the right URL. Designed for the case where the
 phone's USB port is broken and every other path (Play Store sign-in, ADB,
-cloud sync) is more friction than it's worth.
+cloud sync) is more friction than it's worth. Three independent scripts, one
+umbrella CLI, 91 tests.
 
-## First user moment
+## ⚡ Features
+
+- 📲 **QR launch**: every script prints a scannable QR code in the terminal; the phone camera drops straight into the right URL, no typed IPs.
+- 📲 **Browser upload** (`upload_server.py`): the browser the phone already has is the whole client. Drag-and-drop PWA at the root, no-JS fallback at `/basic`, 512 MiB default cap.
+- 📲 **FTP receive** (`pc_ftp_server.py`): an FTP server on the PC with random per-run credentials, printed at startup; the QR encodes the full `ftp://` URL for repeat transfers.
+- 📲 **APK sideload** (`sideload_server.py`): hosts an APK over plain HTTP so the phone installs an FTP client from its own browser; auto-downloads the latest [Primitive FTPd](https://github.com/wolpi/prim-ftpd) release when none is supplied.
+- 📲 **mDNS discovery**: `--mdns <hostname>` on all three scripts broadcasts the server over zeroconf, so the phone resolves `<hostname>.local` instead of an IP.
+- 📲 **Installable PWA**: the upload page ships a real service worker and home-screen install; the app shell caches for offline launch, uploads POST straight through.
+
+```mermaid
+flowchart LR
+    A[PC script prints a QR] --> B[Phone camera scans it]
+    B --> C[Browser or FTP client]
+    C --> D[incoming/ on the PC]
+```
+
+## 🧭 When you'd want this
+
+- Your Android phone has a broken or missing USB port and you still need to install an APK or move files on or off it.
+- You'd rather run a 30-second script than set up a cloud sync, install a phone-side app from the Play Store, or fight ADB-over-Wi-Fi.
+- You're on the same Wi-Fi network as the phone and don't need anything to leave the LAN.
+
+Everything is LAN-only. The only outbound internet call is the optional first-run download of [Primitive FTPd](https://github.com/wolpi/prim-ftpd) from GitHub.
+
+## 🚀 Quick start
+
+Python 3.9 or newer.
 
 1. `pip install -r requirements.txt` (one time).
 2. `python upload_server.py` on the PC.
@@ -24,25 +74,13 @@ cloud sync) is more friction than it's worth.
 Files land in `./incoming/` on the PC. No app install, no typing IPs, no
 account anywhere. Everything stays on the LAN.
 
-## When you'd want this
+Either clone the repo or just download the three `.py` files. They're independent.
 
-- Your Android phone has a broken or missing USB port and you still need to install an APK or move files on or off it.
-- You'd rather run a 30-second script than set up a cloud sync, install a phone-side app from the Play Store, or fight ADB-over-Wi-Fi.
-- You're on the same Wi-Fi network as the phone and don't need anything to leave the LAN.
+![The terminal after python upload_server.py: the served URL and its scannable QR code](docs/brand/qr-terminal.png)
 
-Everything is LAN-only. The only outbound internet call is the optional first-run download of [Primitive FTPd](https://github.com/wolpi/prim-ftpd) from GitHub.
+*The real terminal QR from `upload_server.py`.*
 
-## Install
-
-Python 3.9 or newer.
-
-```bash
-pip install -r requirements.txt
-```
-
-Then either clone the repo or just download the three `.py` files. They're independent.
-
-## Three scripts, one flow
+## 🧰 Three scripts, one flow
 
 Each script runs on its own. Pick the one that matches how you want files to move.
 
@@ -84,9 +122,41 @@ Phone scans the QR (or visits the printed URL), picks file(s), submits. Files la
 
 Flags: `--port` (default 8080), `--dir`, `--max-bytes` (default 512 MiB), `--mdns <hostname>`.
 
-## Security profile
+![The served PWA upload shell: dark page, green dashed drop zone, file picker and submit button](docs/brand/pwa-landing.png)
+
+*The served PWA shell in a desktop browser.*
+
+## 📦 What you can fling across the LAN
+
+<table>
+<tr>
+<td align="center" width="33%"><b>Camera roll</b><br/>photos and videos off the phone, no cloud round trip</td>
+<td align="center" width="33%"><b>APKs</b><br/>onto a phone whose USB port is dead</td>
+<td align="center" width="33%"><b>Documents</b><br/>PDFs, downloads, exports, anything the file picker shows</td>
+</tr>
+<tr>
+<td align="center" width="33%"><b>Folders</b><br/>repeat transfers through the phone's FTP client</td>
+<td align="center" width="33%"><b>Big files</b><br/>512 MiB browser-upload cap by default, raise it with <code>--max-bytes</code></td>
+<td align="center" width="33%"><b>...anything the phone can share</b><br/>it's all bytes over the LAN</td>
+</tr>
+</table>
+
+Named examples are file types, not integrations; droidlan receives whatever the phone's share sheet or file picker hands it.
+
+## 🔒 Security profile
 
 These scripts assume a trusted LAN. Both `pc_ftp_server.py` and `upload_server.py` listen on `0.0.0.0`, so anyone on the same network who can reach your PC's IP can upload to the configured directory while the server is running. The FTP server uses random credentials by default, but FTP itself is plaintext. Anyone sniffing the LAN sees the password and the file contents. Don't run any of this on public Wi-Fi.
+
+## ⭐ Star history
+
+<!--
+Restore this line when api.star-history.com recovers from its outage:
+[![Star History Chart](https://api.star-history.com/svg?repos=wranngle/droidlan&type=Date)](https://www.star-history.com/#wranngle/droidlan&Date)
+-->
+
+[![GitHub stars](https://img.shields.io/github/stars/wranngle/droidlan?style=social)](https://www.star-history.com/#wranngle/droidlan&Date)
+
+[**View the interactive star history**](https://www.star-history.com/#wranngle/droidlan&Date), drawn live even while star-history's image API is down.
 
 ## License
 
