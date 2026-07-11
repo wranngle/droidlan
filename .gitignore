@@ -22,3 +22,6 @@ incoming/
 ftp.apk
 nul
 logs/
+
+# Agent runtime artifacts (local-only, never tracked)
+.artifacts/
